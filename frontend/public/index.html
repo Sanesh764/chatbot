@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Task Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+        <div class="floating-shape shape-4"></div>
+        <div class="floating-shape shape-5"></div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chatbot-window">
+            <div class="chat-header">
+                <div class="bot-avatar">
+                    <i class="fas fa-robot text-white text-xl"></i>
+                    <div class="status-indicator"></div>
+                </div>
+                <div class="header-info">
+                    <h2>AI Task Assistant</h2>
+                    <p>Always ready to help you</p>
+                </div>
+                <div class="voice-controls">
+                    <button class="voice-btn" id="voiceToggle" title="Toggle Voice">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    <div>👋 Hello! I'm your AI Task Assistant with voice capabilities. I can help you manage tasks, set reminders, and stay organized. You can type or speak to me!</div>
+                    <div class="message-time" id="welcomeTime"></div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
+                <div class="action-buttons">
+                    <button class="action-btn" data-action="📝 Add a new task">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                    <button class="action-btn" data-action="⏰ Set a reminder">
+                        <i class="fas fa-bell"></i> Reminder
+                    </button>
+                    <button class="action-btn" data-action="📋 Show all my tasks">
+                        <i class="fas fa-list"></i> My Tasks
+                    </button>
+                    <button class="action-btn" data-action="📅 Check my schedule">
+                        <i class="fas fa-calendar"></i> Schedule
+                    </button>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea
+                        id="messageInput"
+                        class="message-input"
+                        placeholder="Type or speak your message..."
+                        rows="1"
+                    ></textarea>
+                    <div class="input-controls">
+                        <button class="input-btn voice-input-btn" id="voiceInputBtn" title="Voice Input">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button class="input-btn" id="emojiBtn" title="Add Emoji">
+                            😊
+                        </button>
+                    </div>
+                </div>
+                <button class="send-btn" id="sendBtn" title="Send Message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="voice-visualizer" id="voiceVisualizer">
+        <i class="fas fa-microphone"></i>
+        <p>Listening...</p>
+        <div class="voice-bars">
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+        </div>
+        <p class="text-sm opacity-75">Speak clearly into your microphone</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
