@@ -3,13 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Task Assistant</title>
+    <title>AI Task Assistant - Smart Chatbot</title>
+    <meta name="description" content="AI-powered task assistant with voice capabilities. Manage tasks, set reminders, and stay organized with our intelligent chatbot.">
+    <meta name="keywords" content="AI chatbot, task assistant, voice assistant, productivity, reminders">
+    <meta name="author" content="Your Name">
+    
+    <!-- Preconnect to external domains for faster loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Optimized font loading -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous">
+    
+    <!-- Your custom styles -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Favicon (optional - add if you have one) -->
+    <!-- <link rel="icon" type="image/x-icon" href="/favicon.ico"> -->
 </head>
 <body>
-    <div class="bg-decoration">
+    <!-- Background decoration -->
+    <div class="bg-decoration" aria-hidden="true">
         <div class="floating-shape shape-1"></div>
         <div class="floating-shape shape-2"></div>
         <div class="floating-shape shape-3"></div>
@@ -17,49 +33,54 @@
         <div class="floating-shape shape-5"></div>
     </div>
 
-    <div class="chat-container">
+    <!-- Main chat container -->
+    <main class="chat-container">
         <div class="chatbot-window">
-            <div class="chat-header">
+            <!-- Chat header -->
+            <header class="chat-header">
                 <div class="bot-avatar">
-                    <i class="fas fa-robot text-white text-xl"></i>
-                    <div class="status-indicator"></div>
+                    <i class="fas fa-robot text-white text-xl" aria-hidden="true"></i>
+                    <div class="status-indicator" title="AI Assistant Online"></div>
                 </div>
                 <div class="header-info">
-                    <h2>AI Task Assistant</h2>
+                    <h1>AI Task Assistant</h1>
                     <p>Always ready to help you</p>
                 </div>
                 <div class="voice-controls">
-                    <button class="voice-btn" id="voiceToggle" title="Toggle Voice">
-                        <i class="fas fa-volume-up"></i>
+                    <button class="voice-btn" id="voiceToggle" title="Toggle Voice Output" aria-label="Toggle voice output">
+                        <i class="fas fa-volume-up" aria-hidden="true"></i>
                     </button>
                 </div>
-            </div>
+            </header>
 
-            <div class="chat-messages" id="chatMessages">
+            <!-- Chat messages area -->
+            <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-label="Chat conversation">
                 <div class="message bot-message">
                     <div>👋 Hello! I'm your AI Task Assistant with voice capabilities. I can help you manage tasks, set reminders, and stay organized. You can type or speak to me!</div>
                     <div class="message-time" id="welcomeTime"></div>
                 </div>
             </div>
 
-            <div class="quick-actions">
-                <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
-                <div class="action-buttons">
-                    <button class="action-btn" data-action="📝 Add a new task">
-                        <i class="fas fa-plus"></i> Add Task
+            <!-- Quick actions section -->
+            <section class="quick-actions">
+                <h2><i class="fas fa-bolt" aria-hidden="true"></i> Quick Actions</h2>
+                <div class="action-buttons" role="group" aria-label="Quick action buttons">
+                    <button class="action-btn" data-action="📝 Add a new task" aria-label="Add a new task">
+                        <i class="fas fa-plus" aria-hidden="true"></i> Add Task
                     </button>
-                    <button class="action-btn" data-action="⏰ Set a reminder">
-                        <i class="fas fa-bell"></i> Reminder
+                    <button class="action-btn" data-action="⏰ Set a reminder" aria-label="Set a reminder">
+                        <i class="fas fa-bell" aria-hidden="true"></i> Reminder
                     </button>
-                    <button class="action-btn" data-action="📋 Show all my tasks">
-                        <i class="fas fa-list"></i> My Tasks
+                    <button class="action-btn" data-action="📋 Show all my tasks" aria-label="Show all tasks">
+                        <i class="fas fa-list" aria-hidden="true"></i> My Tasks
                     </button>
-                    <button class="action-btn" data-action="📅 Check my schedule">
-                        <i class="fas fa-calendar"></i> Schedule
+                    <button class="action-btn" data-action="📅 Check my schedule" aria-label="Check schedule">
+                        <i class="fas fa-calendar" aria-hidden="true"></i> Schedule
                     </button>
                 </div>
-            </div>
+            </section>
 
+            <!-- Input container -->
             <div class="input-container">
                 <div class="input-wrapper">
                     <textarea
@@ -67,27 +88,30 @@
                         class="message-input"
                         placeholder="Type or speak your message..."
                         rows="1"
+                        aria-label="Type your message"
+                        maxlength="8000"
                     ></textarea>
                     <div class="input-controls">
-                        <button class="input-btn voice-input-btn" id="voiceInputBtn" title="Voice Input">
-                            <i class="fas fa-microphone"></i>
+                        <button class="input-btn voice-input-btn" id="voiceInputBtn" title="Voice Input" aria-label="Start voice input">
+                            <i class="fas fa-microphone" aria-hidden="true"></i>
                         </button>
-                        <button class="input-btn" id="emojiBtn" title="Add Emoji">
+                        <button class="input-btn" id="emojiBtn" title="Add Emoji" aria-label="Add emoji">
                             😊
                         </button>
                     </div>
                 </div>
-                <button class="send-btn" id="sendBtn" title="Send Message">
-                    <i class="fas fa-paper-plane"></i>
+                <button class="send-btn" id="sendBtn" title="Send Message" aria-label="Send message">
+                    <i class="fas fa-paper-plane" aria-hidden="true"></i>
                 </button>
             </div>
         </div>
-    </div>
+    </main>
 
-    <div class="voice-visualizer" id="voiceVisualizer">
-        <i class="fas fa-microphone"></i>
+    <!-- Voice visualizer overlay -->
+    <div class="voice-visualizer" id="voiceVisualizer" role="dialog" aria-label="Voice input active">
+        <i class="fas fa-microphone" aria-hidden="true"></i>
         <p>Listening...</p>
-        <div class="voice-bars">
+        <div class="voice-bars" aria-hidden="true">
             <div class="voice-bar"></div>
             <div class="voice-bar"></div>
             <div class="voice-bar"></div>
@@ -97,6 +121,25 @@
         <p class="text-sm opacity-75">Speak clearly into your microphone</p>
     </div>
 
+    <!-- Loading indicator (optional) -->
+    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+        <div class="spinner"></div>
+        <p>Connecting to AI service...</p>
+    </div>
+
+    <!-- JavaScript -->
     <script src="script.js"></script>
+    
+    <!-- Error handling script -->
+    <script>
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Script error:', { msg, url, lineNo, columnNo, error });
+            return false;
+        };
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+        });
+    </script>
 </body>
 </html>
