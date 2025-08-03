@@ -12,31 +12,31 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 // Middleware
-app.use(cors()); // Allow cross-origin requests
-app.use(express.json({ limit: '10mb' })); // Parse JSON bodies with size limit
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from the public folder in the root directory
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// ✅ FIXED PATH FOR RAILWAY (public folder is outside Backend/)
+const publicPath = path.join(__dirname, '..', 'public');
+app.use(express.static(publicPath));
 
-// Health check endpoint for Render
+app.get('/', (req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
+});
+
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ 
-    status: 'OK', 
+    status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
 });
 
-// Serve the main HTML file for the frontend
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
-});
-
 // Test API key endpoint
 app.get('/api/test', (req, res) => {
   const hasApiKey = !!process.env.GEMINI_API_KEY;
-  res.json({ 
+  res.json({
     message: 'API test endpoint',
     hasApiKey: hasApiKey,
     keyLength: hasApiKey ? process.env.GEMINI_API_KEY.length : 0,
@@ -44,12 +44,11 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// Chatbot endpoint - integrates with Gemini AI
+// Chatbot endpoint
 app.post('/api/chat', async (req, res) => {
   try {
     const { message, userId } = req.body;
-    
-    // Input validation
+
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return res.status(400).json({
         success: false,
@@ -57,7 +56,6 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    // Check message length
     if (message.length > 8000) {
       return res.status(400).json({
         success: false,
@@ -65,7 +63,6 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    // Check if API key is configured
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
         success: false,
@@ -73,13 +70,11 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    // Generate AI response using Gemini with timeout
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), 25000); // 25 second timeout
-    });
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout')), 25000)
+    );
 
     const aiPromise = model.generateContent(message.trim());
-    
     const result = await Promise.race([aiPromise, timeoutPromise]);
     const response = await result.response;
     const botResponse = response.text();
@@ -90,29 +85,24 @@ app.post('/api/chat', async (req, res) => {
       timestamp: new Date().toISOString(),
       userId: userId || 'anonymous'
     });
-
   } catch (error) {
     console.error('Error generating response:', error.message);
-    
-    // Fallback to simple response if AI fails
     const fallbackResponse = generateFallbackResponse(req.body.message);
-    
     res.json({
       success: true,
       response: fallbackResponse,
-      timestamp: new Date().toISOString(),
       fallback: true,
+      timestamp: new Date().toISOString(),
       error: 'AI service temporarily unavailable'
     });
   }
 });
 
-// Chat with conversation history endpoint - FIXED VERSION
+// Chat with history
 app.post('/api/chat-with-history', async (req, res) => {
   try {
     const { messages, userId } = req.body;
-    
-    // Input validation
+
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({
         success: false,
@@ -120,7 +110,6 @@ app.post('/api/chat-with-history', async (req, res) => {
       });
     }
 
-    // Limit conversation history
     const maxMessages = 20;
     const limitedMessages = messages.slice(-maxMessages);
 
@@ -131,44 +120,30 @@ app.post('/api/chat-with-history', async (req, res) => {
       });
     }
 
-    // Format conversation history for Gemini (exclude the latest message for history)
     let historyMessages = limitedMessages.slice(0, -1).map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }]
     }));
 
-    // Ensure history starts with a user message and maintains proper alternating structure
     const cleanHistory = [];
     let expectedRole = 'user';
-    
     for (const msg of historyMessages) {
       if (msg.role === expectedRole) {
         cleanHistory.push(msg);
         expectedRole = expectedRole === 'user' ? 'model' : 'user';
       }
-      // Skip messages that don't follow the alternating pattern
     }
 
-    // Debug logging (optional - remove in production)
-    console.log('Clean history length:', cleanHistory.length);
-    if (cleanHistory.length > 0) {
-      console.log('First message role:', cleanHistory[0].role);
-    }
-
-    // Start chat with or without history
-    const chat = cleanHistory.length > 0 
+    const chat = cleanHistory.length > 0
       ? model.startChat({ history: cleanHistory })
       : model.startChat();
 
-    // Send the latest message with timeout
     const latestMessage = limitedMessages[limitedMessages.length - 1];
-    
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout')), 25000);
-    });
 
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout')), 25000)
+    );
     const chatPromise = chat.sendMessage(latestMessage.content);
-    
     const result = await Promise.race([chatPromise, timeoutPromise]);
     const response = await result.response;
     const botResponse = response.text();
@@ -182,22 +157,20 @@ app.post('/api/chat-with-history', async (req, res) => {
 
   } catch (error) {
     console.error('Error in chat with history:', error.message);
-    
     const fallbackResponse = generateFallbackResponse(
       req.body.messages?.[req.body.messages.length - 1]?.content || ''
     );
-    
     res.json({
       success: true,
       response: fallbackResponse,
-      timestamp: new Date().toISOString(),
       fallback: true,
+      timestamp: new Date().toISOString(),
       error: 'AI service temporarily unavailable'
     });
   }
 });
 
-// Fallback response function (used when AI fails)
+// Fallback response generator
 function generateFallbackResponse(userMessage) {
   const responses = {
     'hello': 'Hi there! How can I help you today?',
@@ -208,57 +181,49 @@ function generateFallbackResponse(userMessage) {
     'help': 'I\'m here to help! What do you need assistance with?',
     'thanks': 'You\'re welcome! Is there anything else I can help you with?',
     'thank you': 'You\'re welcome! Is there anything else I can help you with?',
-    'what can you do': 'I\'m an AI chatbot that can help answer questions, have conversations, and provide assistance on various topics!',
-    'who are you': 'I\'m your friendly AI chatbot assistant, here to help with your questions and conversations!'
+    'what can you do': 'I\'m an AI chatbot that can answer questions and assist with many topics!',
+    'who are you': 'I\'m your friendly AI chatbot assistant!'
   };
-  
+
   if (!userMessage) {
-    return 'I didn\'t receive your message. Could you please try again?';
+    return 'I didn\'t receive your message. Could you try again?';
   }
-  
+
   const lowerMessage = userMessage.toLowerCase().trim();
-  
-  // Check for exact matches
-  if (responses[lowerMessage]) {
-    return responses[lowerMessage];
-  }
-  
-  // Check for partial matches
+
+  if (responses[lowerMessage]) return responses[lowerMessage];
+
   for (let key in responses) {
-    if (lowerMessage.includes(key)) {
-      return responses[key];
-    }
+    if (lowerMessage.includes(key)) return responses[key];
   }
-  
-  // Default response
-  return `I understand you said: "${userMessage}". I'm currently experiencing some technical difficulties with my AI service, but I'm here to help! Could you try rephrasing your question?`;
+
+  return `I understand you said: "${userMessage}". I'm currently experiencing technical issues, but I'm here to help. Could you try rephrasing your question?`;
 }
 
-// Handle 404 errors
+// Handle 404
 app.use((req, res) => {
-  res.status(404).json({ 
+  res.status(404).json({
     success: false,
     error: 'Endpoint not found',
     availableEndpoints: ['/', '/api/chat', '/api/chat-with-history', '/api/test', '/health']
   });
 });
 
-// Error handling middleware
+// Handle server errors
 app.use((error, req, res, next) => {
   console.error('Server error:', error.message);
-  res.status(500).json({ 
+  res.status(500).json({
     success: false,
     error: 'Something went wrong on the server!',
     timestamp: new Date().toISOString()
   });
 });
 
-// Graceful shutdown handling
+// Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received. Shutting down gracefully...');
   process.exit(0);
 });
-
 process.on('SIGINT', () => {
   console.log('SIGINT received. Shutting down gracefully...');
   process.exit(0);
