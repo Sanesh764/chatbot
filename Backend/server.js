@@ -16,8 +16,8 @@ app.use(cors()); // Allow cross-origin requests
 app.use(express.json({ limit: '10mb' })); // Parse JSON bodies with size limit
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files (if you have frontend files)
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from the public folder in the root directory
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Health check endpoint for Render
 app.get('/health', (req, res) => {
@@ -28,14 +28,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Basic route to test server
+// Serve the main HTML file for the frontend
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'AI Chatbot is running successfully!',
-    version: '1.0.0',
-    endpoints: ['/api/chat', '/api/chat-with-history', '/api/test'],
-    timestamp: new Date().toISOString()
-  });
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 // Test API key endpoint

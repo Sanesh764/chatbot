@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot - Your Intelligent Assistant</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 text-slate-800 dark:text-slate-200 min-h-screen">
+
+    <div class="flex flex-col h-screen max-w-5xl mx-auto bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-2xl shadow-slate-300/40 dark:shadow-black/40 border border-white/20 dark:border-slate-700/50">
+        <header class="p-4 border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between flex-shrink-0 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
+            <div class="flex items-center space-x-3">
+                <div class="relative flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 rounded-xl shadow-lg">
+                    <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V8.25a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 8.25v7.5a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white dark:border-slate-800 animate-pulse"></div>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">AI Assistant</h1>
+                    <div id="connectionStatus" class="text-sm text-slate-500 dark:text-slate-400 flex items-center space-x-1.5">
+                        <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                        <span>Connecting...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="exportChat" class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100/50 dark:bg-slate-700/50 hover:bg-slate-200/50 dark:hover:bg-slate-600/50 rounded-xl transition-all duration-200 flex items-center space-x-2 btn-bounce">
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                    <span>Export</span>
+                </button>
+                <button id="clearChat" class="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100/50 dark:bg-slate-700/50 hover:bg-slate-200/50 dark:hover:bg-slate-600/50 rounded-xl transition-all duration-200 flex items-center space-x-2 btn-bounce">
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                    <span>Clear</span>
+                </button>
+                <button id="themeToggle" class="p-2 text-slate-600 dark:text-slate-300 bg-slate-100/50 dark:bg-slate-700/50 hover:bg-slate-200/50 dark:hover:bg-slate-600/50 rounded-xl transition-all duration-200 btn-bounce">
+                    <svg id="theme-icon-light" class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" /></svg>
+                    <svg id="theme-icon-dark" class="w-5 h-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>
+                </button>
+            </div>
+        </header>
+
+        <main id="chatMessages" class="flex-1 p-6 overflow-y-auto custom-scrollbar bg-gradient-to-b from-transparent to-slate-50/30 dark:to-slate-900/30">
+            </main>
+        
+        <div id="typingIndicator" class="px-6 pb-6 hidden">
+            <div class="flex items-start gap-3">
+                <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 rounded-full flex-shrink-0 shadow-md">
+                    <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V8.25a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 8.25v7.5a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+                </div>
+                <div class="bg-slate-100/70 dark:bg-slate-700/70 backdrop-blur-sm p-4 rounded-2xl rounded-bl-lg max-w-md shadow-lg border border-slate-200/50 dark:border-slate-600/50">
+                    <div class="typing-dots flex items-center gap-1.5">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="p-4 border-t border-slate-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm flex-shrink-0">
+            <div class="w-full max-w-4xl mx-auto">
+                <form id="chatForm" class="flex items-end gap-3">
+                    <div class="flex-1 bg-slate-100/70 dark:bg-slate-700/70 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500/50 transition-all duration-200 p-3 shadow-lg">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="Type your message..." 
+                            rows="1" 
+                            maxlength="8000"
+                            class="w-full bg-transparent border-none outline-none resize-none text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus-glow"
+                        ></textarea>
+                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-200/30 dark:border-slate-600/30">
+                            <div class="flex items-center space-x-2">
+                                <button type="button" id="attachFile" class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-600/50">
+                                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" /></svg>
+                                </button>
+                                <button type="button" id="voiceInput" class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-600/50">
+                                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" /></svg>
+                                </button>
+                            </div>
+                            <div class="text-xs text-slate-400 dark:text-slate-500">
+                                <span id="charCount">0/8000</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="sendButton" type="submit" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-800 transition-all duration-200 disabled:from-blue-300 disabled:to-purple-300 dark:disabled:from-blue-800 dark:disabled:to-purple-800 disabled:cursor-not-allowed flex-shrink-0 shadow-lg btn-bounce hover:shadow-xl transform hover:scale-105">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>
+                    </button>
+                </form>
+            </div>
+        </footer>
+    </div>
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-8 rounded-2xl shadow-2xl text-center border border-white/20 dark:border-slate-700/50">
+            <div class="w-16 h-16 border-4 border-slate-200 dark:border-slate-600 border-t-4 border-t-blue-500 rounded-full animate-spin mx-auto mb-6"></div>
+            <p class="text-slate-700 dark:text-slate-300 font-medium">Connecting to AI...</p>
+        </div>
+    </div>
+
+    <div id="errorModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-2xl max-w-md w-full m-4 border border-white/20 dark:border-slate-700/50">
+            <div class="p-6 border-b border-slate-200/50 dark:border-slate-700/50">
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Connection Error</h3>
+            </div>
+            <div class="p-6">
+                <p id="errorMessage" class="text-slate-600 dark:text-slate-300">Unable to connect to the AI service.</p>
+            </div>
+            <div class="p-4 bg-slate-50/50 dark:bg-slate-700/30 flex justify-end items-center space-x-3 rounded-b-2xl">
+                <button id="closeModal" class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white/70 dark:bg-slate-600/70 border border-slate-300/50 dark:border-slate-500/50 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-500/70 transition btn-bounce">Close</button>
+                <button id="retryConnection" class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl hover:from-blue-700 hover:to-purple-700 transition btn-bounce">Retry</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-2xl max-w-md w-full m-4 border border-white/20 dark:border-slate-700/50">
+            <div class="p-6">
+                <h3 id="confirmTitle" class="text-lg font-semibold text-slate-800 dark:text-slate-100">Are you sure?</h3>
+                <p id="confirmMessage" class="text-slate-600 dark:text-slate-300 mt-2">This action cannot be undone.</p>
+            </div>
+            <div class="p-4 bg-slate-50/50 dark:bg-slate-700/30 flex justify-end items-center space-x-3 rounded-b-2xl">
+                <button id="confirmCancel" class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white/70 dark:bg-slate-600/70 border border-slate-300/50 dark:border-slate-500/50 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-500/70 transition btn-bounce">Cancel</button>
+                <button id="confirmOk" class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 rounded-xl hover:from-red-700 hover:to-red-800 transition btn-bounce">Confirm</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
