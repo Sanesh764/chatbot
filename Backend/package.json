@@ -9,7 +9,14 @@
     "build": "echo 'No build step required'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["chatbot", "ai", "gemini", "openai", "express", "node"],
+  "keywords": [
+    "chatbot",
+    "ai",
+    "gemini",
+    "openai",
+    "express",
+    "node"
+  ],
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
@@ -17,6 +24,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "mongoose": "^9.7.1",
     "openai": "^5.10.1"
   },
   "devDependencies": {

@@ -1,28 +1,30 @@
 const express = require('express');
 const cors = require('cors');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const dotenv = require('dotenv');
 const path = require('path');
-require('dotenv').config();
+const connectDB = require('./config/db');
+const chatRoutes = require('./routes/chatRoutes');
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+// Connect to MongoDB
+connectDB();
 
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ FIXED PATH FOR RAILWAY (public folder is outside Backend/)
+// Serve static frontend files (Railway/Production build fallback)
 const publicPath = path.join(__dirname, '..', 'public');
 app.use(express.static(publicPath));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(publicPath, 'index.html'));
-});
+// Mount Chat API Routes
+app.use('/api', chatRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -33,18 +35,13 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Test API key endpoint
-app.get('/api/test', (req, res) => {
-  const hasApiKey = !!process.env.GEMINI_API_KEY;
-  res.json({
-    message: 'API test endpoint',
-    hasApiKey: hasApiKey,
-    keyLength: hasApiKey ? process.env.GEMINI_API_KEY.length : 0,
-    environment: process.env.NODE_ENV || 'development'
-  });
+// Serve the static frontend index page at root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-// Chatbot endpoint
+// Legacy /api/chat simple endpoint for backward compatibility (non-history chat)
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 app.post('/api/chat', async (req, res) => {
   try {
     const { message, userId } = req.body;
@@ -70,6 +67,9 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Request timeout')), 25000)
     );
@@ -87,10 +87,9 @@ app.post('/api/chat', async (req, res) => {
     });
   } catch (error) {
     console.error('Error generating response:', error.message);
-    const fallbackResponse = generateFallbackResponse(req.body.message);
     res.json({
       success: true,
-      response: fallbackResponse,
+      response: `I understand you said: "${req.body.message}". I'm currently experiencing technical issues, but I'm here to help. Could you try rephrasing your question?`,
       fallback: true,
       timestamp: new Date().toISOString(),
       error: 'AI service temporarily unavailable'
@@ -98,114 +97,33 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// Chat with history
-app.post('/api/chat-with-history', async (req, res) => {
-  try {
-    const { messages, userId } = req.body;
-
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Messages array is required and must not be empty'
-      });
-    }
-
-    const maxMessages = 20;
-    const limitedMessages = messages.slice(-maxMessages);
-
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({
-        success: false,
-        error: 'Gemini API key not configured'
-      });
-    }
-
-    let historyMessages = limitedMessages.slice(0, -1).map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }]
-    }));
-
-    const cleanHistory = [];
-    let expectedRole = 'user';
-    for (const msg of historyMessages) {
-      if (msg.role === expectedRole) {
-        cleanHistory.push(msg);
-        expectedRole = expectedRole === 'user' ? 'model' : 'user';
-      }
-    }
-
-    const chat = cleanHistory.length > 0
-      ? model.startChat({ history: cleanHistory })
-      : model.startChat();
-
-    const latestMessage = limitedMessages[limitedMessages.length - 1];
-
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Request timeout')), 25000)
-    );
-    const chatPromise = chat.sendMessage(latestMessage.content);
-    const result = await Promise.race([chatPromise, timeoutPromise]);
-    const response = await result.response;
-    const botResponse = response.text();
-
-    res.json({
-      success: true,
-      response: botResponse,
-      timestamp: new Date().toISOString(),
-      userId: userId || 'anonymous'
-    });
-
-  } catch (error) {
-    console.error('Error in chat with history:', error.message);
-    const fallbackResponse = generateFallbackResponse(
-      req.body.messages?.[req.body.messages.length - 1]?.content || ''
-    );
-    res.json({
-      success: true,
-      response: fallbackResponse,
-      fallback: true,
-      timestamp: new Date().toISOString(),
-      error: 'AI service temporarily unavailable'
-    });
-  }
+// Test API endpoint (checks key status)
+app.get('/api/test', (req, res) => {
+  const hasApiKey = !!process.env.GEMINI_API_KEY;
+  const mongoose = require('mongoose');
+  res.json({
+    message: 'API test endpoint',
+    hasApiKey: hasApiKey,
+    keyLength: hasApiKey ? process.env.GEMINI_API_KEY.length : 0,
+    databaseConnected: mongoose.connection.readyState === 1,
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
-
-// Fallback response generator
-function generateFallbackResponse(userMessage) {
-  const responses = {
-    'hello': 'Hi there! How can I help you today?',
-    'hi': 'Hello! What can I do for you?',
-    'how are you': 'I\'m doing well, thank you for asking! How can I assist you?',
-    'bye': 'Goodbye! Have a great day!',
-    'goodbye': 'Farewell! Feel free to come back anytime!',
-    'help': 'I\'m here to help! What do you need assistance with?',
-    'thanks': 'You\'re welcome! Is there anything else I can help you with?',
-    'thank you': 'You\'re welcome! Is there anything else I can help you with?',
-    'what can you do': 'I\'m an AI chatbot that can answer questions and assist with many topics!',
-    'who are you': 'I\'m your friendly AI chatbot assistant!'
-  };
-
-  if (!userMessage) {
-    return 'I didn\'t receive your message. Could you try again?';
-  }
-
-  const lowerMessage = userMessage.toLowerCase().trim();
-
-  if (responses[lowerMessage]) return responses[lowerMessage];
-
-  for (let key in responses) {
-    if (lowerMessage.includes(key)) return responses[key];
-  }
-
-  return `I understand you said: "${userMessage}". I'm currently experiencing technical issues, but I'm here to help. Could you try rephrasing your question?`;
-}
 
 // Handle 404
 app.use((req, res) => {
   res.status(404).json({
     success: false,
     error: 'Endpoint not found',
-    availableEndpoints: ['/', '/api/chat', '/api/chat-with-history', '/api/test', '/health']
+    availableEndpoints: [
+      '/',
+      '/health',
+      '/api/test',
+      '/api/chat',
+      '/api/chat-with-history',
+      '/api/sessions',
+      '/api/sessions/:sessionId/history'
+    ]
   });
 });
 
