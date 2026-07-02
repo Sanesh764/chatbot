@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+// Create a central Axios instance for standard Auth operations
 const api = axios.create({
-  baseURL: '',
+  baseURL: import.meta.env.VITE_API_URL || '',
+  withCredentials: true, // Crucial for cross-domain cookie validation on separately deployed services
   headers: {
     'Content-Type': 'application/json'
   },
@@ -13,7 +15,7 @@ const api = axios.create({
  */
 export const signup = async (formData) => {
   const isMultipart = formData instanceof FormData;
-  const response = await api.post('/api/auth/signup', formData, {
+  const response = await api.post('/auth/signup', formData, {
     headers: {
       'Content-Type': isMultipart ? 'multipart/form-data' : 'application/json'
     }
@@ -25,7 +27,7 @@ export const signup = async (formData) => {
  * Update user profile settings (supports optional avatar upload using FormData)
  */
 export const updateProfile = async (formData) => {
-  const response = await api.put('/api/auth/profile', formData, {
+  const response = await api.put('/auth/profile', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
@@ -37,7 +39,7 @@ export const updateProfile = async (formData) => {
  * Authenticate credentials and login user
  */
 export const login = async ({ email, password }) => {
-  const response = await api.post('/api/auth/login', { email, password });
+  const response = await api.post('/auth/login', { email, password });
   return response.data;
 };
 
@@ -45,7 +47,7 @@ export const login = async ({ email, password }) => {
  * Terminate user session and clear HttpOnly cookie token
  */
 export const logout = async () => {
-  const response = await api.post('/api/auth/logout');
+  const response = await api.post('/auth/logout');
   return response.data;
 };
 
@@ -53,7 +55,7 @@ export const logout = async () => {
  * Retrieve user metadata
  */
 export const getProfile = async () => {
-  const response = await api.get('/api/auth/profile');
+  const response = await api.get('/auth/profile');
   return response.data;
 };
 
@@ -61,6 +63,6 @@ export const getProfile = async () => {
  * Validate token session validity on bootstrap load
  */
 export const checkAuth = async () => {
-  const response = await api.get('/api/auth/check-auth');
+  const response = await api.get('/auth/check-auth');
   return response.data;
 };

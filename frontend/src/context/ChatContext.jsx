@@ -109,7 +109,8 @@ export const ChatProvider = ({ children }) => {
   const checkConnection = async (showOverlay = false) => {
     if (showOverlay) setDbStatus('connecting');
     try {
-      const response = await fetch('/api/test');
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/test`);
       if (!response.ok) throw new Error('API server returned error');
       
       const data = await response.json();

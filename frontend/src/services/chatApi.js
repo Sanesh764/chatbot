@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // Create a central Axios instance for standard JSON REST operations
 const api = axios.create({
-  baseURL: '',
+  baseURL: import.meta.env.VITE_API_URL || '',
+  withCredentials: true, // Crucial for cross-domain cookie validation on separately deployed services
   headers: {
     'Content-Type': 'application/json'
   },
@@ -13,7 +14,7 @@ const api = axios.create({
  * Fetch all sessions for a user
  */
 export const getSessions = async (userId) => {
-  const response = await api.get(`/api/sessions?userId=${userId}`);
+  const response = await api.get(`/sessions?userId=${userId}`);
   return response.data.data?.sessions || [];
 };
 
@@ -21,7 +22,7 @@ export const getSessions = async (userId) => {
  * Create or initialize a session on the server
  */
 export const createSession = async (sessionId, userId, title = 'New Conversation') => {
-  const response = await api.post('/api/sessions', { sessionId, userId, title });
+  const response = await api.post('/sessions', { sessionId, userId, title });
   return response.data.data?.session;
 };
 
@@ -29,7 +30,7 @@ export const createSession = async (sessionId, userId, title = 'New Conversation
  * Get history of messages for a session
  */
 export const getHistory = async (sessionId) => {
-  const response = await api.get(`/api/sessions/${sessionId}/history`);
+  const response = await api.get(`/sessions/${sessionId}/history`);
   return response.data.data?.messages || [];
 };
 
@@ -37,7 +38,7 @@ export const getHistory = async (sessionId) => {
  * Delete a session and its message logs
  */
 export const clearHistory = async (sessionId) => {
-  const response = await api.delete(`/api/sessions/${sessionId}`);
+  const response = await api.delete(`/sessions/${sessionId}`);
   return response.data.data;
 };
 
@@ -72,13 +73,14 @@ export const streamChatCompletion = async ({
       stream: true
     };
 
-    const response = await fetch('/api/chat-with-history', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/chat-with-history`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload),
-      signal
+      signal,
+      credentials: 'include' // Crucial for cross-domain cookie validation on separately deployed services
     });
 
     if (!response.ok) {
